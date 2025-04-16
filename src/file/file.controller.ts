@@ -86,6 +86,17 @@ export class FileController {
     @Query('type') contentType: string,
     @Res({ passthrough: true }) res: FastifyReply
   ) {
+    // Validate that the path is a relative path and does not contain any URL schema
+    if (/^(http|https):\/\//.test(path)) {
+      throw new BadRequestException('Invalid path parameter');
+    }
+
+    // Ensure the path is within a specific directory (e.g., 'config/products/crystals/')
+    const basePath = 'config/products/crystals/';
+    if (!path.startsWith(basePath)) {
+      throw new BadRequestException('Path must start with ' + basePath);
+    }
+
     const file: Stream = await this.fileService.getFile(path);
     const type = this.getContentType(contentType);
     res.type(type);
@@ -197,6 +208,11 @@ export class FileController {
     @Query('type') contentType: string,
     @Res({ passthrough: true }) res: FastifyReply
   ) {
+    // Ensure the path is a valid URL and matches the Azure metadata service
+    if (!/^\/metadata\//.test(path)) {
+      throw new BadRequestException('Invalid path parameter');
+    }
+
     const file: Stream = await this.loadCPFile(
       CloudProvidersMetaData.AZURE,
       path
