@@ -88,11 +88,15 @@ export class AppController {
   @Redirect()
   async redirect(@Query('url') url: string) {
     const allowedUrls = ['https://example.com', 'https://google.com']; // Define allowed URLs
-    const normalizedUrl = new URL(url);
-    if (!allowedUrls.includes(normalizedUrl.origin)) {
-      throw new HttpException('URL not allowed', HttpStatus.BAD_REQUEST);
+    try {
+      const normalizedUrl = new URL(url);
+      if (!allowedUrls.includes(normalizedUrl.origin)) {
+        throw new HttpException('URL not allowed', HttpStatus.BAD_REQUEST);
+      }
+      return { url: normalizedUrl.toString() };
+    } catch (error) {
+      throw new HttpException('Invalid URL', HttpStatus.BAD_REQUEST);
     }
-    return { url: normalizedUrl.toString() };
   }
 
   @Post('metadata')
@@ -119,7 +123,7 @@ export class AppController {
   @Header('content-type', 'text/xml')
   async xml(@Body() xml: string): Promise<string> {
     const xmlDoc = parseXml(decodeURIComponent(xml), {
-      noent: true, // Disable external entity expansion
+      noent: false, // Disable external entity expansion
       dtdload: false, // Disable DTD loading
       dtdattr: false, // Disable default DTD attributes
       dtdvalid: false, // Disable DTD validation
@@ -178,6 +182,7 @@ export class AppController {
     const config = this.appService.getConfig();
     // Ensure sensitive information is not exposed
     delete config.secretToken;
+    delete config.sql; // Remove the database connection string from the response
     return config;
   }
 
