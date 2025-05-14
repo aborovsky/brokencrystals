@@ -1,6 +1,9 @@
 import { test, before, after } from 'node:test';
-import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
 import { SecRunner } from '@sectester/runner';
+import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
+
+const timeout = 40 * 60 * 1000;
+const baseUrl = process.env.BRIGHT_TARGET_URL!;
 
 let runner!: SecRunner;
 
@@ -15,13 +18,10 @@ before(async () => {
 
 after(() => runner.clear());
 
-const timeout = 40 * 60 * 1000;
-const baseUrl = process.env.BRIGHT_TARGET_URL!;
-
 test('POST /api/auth/admin/login', { signal: AbortSignal.timeout(timeout) }, async () => {
   await runner
     .createScan({
-      tests: ['csrf', 'jwt', 'sqli', 'secret_tokens'],
+      tests: ['csrf', 'jwt', 'sqli', 'osi', 'xss', 'secret_tokens', 'open_database'],
       attackParamLocations: [AttackParamLocation.BODY]
     })
     .threshold(Severity.CRITICAL)
@@ -30,8 +30,8 @@ test('POST /api/auth/admin/login', { signal: AbortSignal.timeout(timeout) }, asy
       method: HttpMethod.POST,
       url: `${baseUrl}/api/auth/admin/login`,
       body: {
-        user: "example@example.com",
-        password: "password123"
+        user: 'example@example.com',
+        password: 'password123'
       },
       headers: { 'Content-Type': 'application/json' }
     });

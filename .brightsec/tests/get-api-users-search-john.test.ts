@@ -1,9 +1,11 @@
 import { test, before, after } from 'node:test';
+import { SecRunner } from '@sectester/runner';
 import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
-// Other setup and teardown logic from the test skeleton
 
 const timeout = 40 * 60 * 1000;
 const baseUrl = process.env.BRIGHT_TARGET_URL!;
+
+let runner!: SecRunner;
 
 before(async () => {
   runner = new SecRunner({
@@ -15,8 +17,6 @@ before(async () => {
 });
 
 after(() => runner.clear());
-
-// Test cases will be added here
 
 test('GET /api/users/search/john', { signal: AbortSignal.timeout(timeout) }, async () => {
   await runner

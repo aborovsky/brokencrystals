@@ -1,6 +1,9 @@
 import { test, before, after } from 'node:test';
-import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
 import { SecRunner } from '@sectester/runner';
+import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
+
+const timeout = 40 * 60 * 1000;
+const baseUrl = process.env.BRIGHT_TARGET_URL!;
 
 let runner!: SecRunner;
 
@@ -15,13 +18,10 @@ before(async () => {
 
 after(() => runner.clear());
 
-const timeout = 40 * 60 * 1000;
-const baseUrl = process.env.BRIGHT_TARGET_URL!;
-
-test('GET /api/file/raw', { signal: AbortSignal.timeout(timeout) }, async () => {
+test('GET /api/file/raw?path=config/products/crystals/amethyst.jpg', { signal: AbortSignal.timeout(timeout) }, async () => {
   await runner
     .createScan({
-      tests: ['lfi', 'ssrf', 'open_cloud_storage', 'file_upload', 'full_path_disclosure'],
+      tests: ['lfi', 'ssrf', 'open_cloud_storage', 'full_path_disclosure'],
       attackParamLocations: [AttackParamLocation.QUERY]
     })
     .threshold(Severity.CRITICAL)

@@ -1,6 +1,9 @@
 import { test, before, after } from 'node:test';
-import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
 import { SecRunner } from '@sectester/runner';
+import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
+
+const timeout = 40 * 60 * 1000;
+const baseUrl = process.env.BRIGHT_TARGET_URL!;
 
 let runner!: SecRunner;
 
@@ -15,20 +18,16 @@ before(async () => {
 
 after(() => runner.clear());
 
-const timeout = 40 * 60 * 1000;
-const baseUrl = process.env.BRIGHT_TARGET_URL!;
-
 test('OPTIONS /api/users', { signal: AbortSignal.timeout(timeout) }, async () => {
   await runner
     .createScan({
-      tests: ['csrf', 'http_method_fuzzing', 'xss', 'xxe'],
+      tests: ['csrf', 'http_method_fuzzing', 'ldap_injection', 'xss', 'xxe'],
       attackParamLocations: [AttackParamLocation.HEADER]
     })
     .threshold(Severity.CRITICAL)
     .timeout(timeout)
     .run({
       method: HttpMethod.OPTIONS,
-      url: `${baseUrl}/api/users`,
-      headers: { 'Access-Control-Request-Headers': 'OPTIONS, GET, POST, DELETE' }
+      url: `${baseUrl}/api/users`
     });
 });

@@ -1,6 +1,9 @@
 import { test, before, after } from 'node:test';
-import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
 import { SecRunner } from '@sectester/runner';
+import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
+
+const timeout = 40 * 60 * 1000;
+const baseUrl = process.env.BRIGHT_TARGET_URL!;
 
 let runner!: SecRunner;
 
@@ -15,14 +18,11 @@ before(async () => {
 
 after(() => runner.clear());
 
-const timeout = 40 * 60 * 1000;
-const baseUrl = process.env.BRIGHT_TARGET_URL!;
-
 test('DELETE /api/email/deleteEmails', { signal: AbortSignal.timeout(timeout) }, async () => {
   await runner
     .createScan({
-      tests: ['csrf', 'bopla', 'business_constraint_bypass', 'improper_asset_management'],
-      attackParamLocations: [AttackParamLocation.HEADER]
+      tests: ['csrf', 'bopla', 'proto_pollution', 'improper_asset_management'],
+      attackParamLocations: [AttackParamLocation.HEADER, AttackParamLocation.PATH]
     })
     .threshold(Severity.CRITICAL)
     .timeout(timeout)

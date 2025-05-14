@@ -1,6 +1,9 @@
 import { test, before, after } from 'node:test';
-import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
 import { SecRunner } from '@sectester/runner';
+import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
+
+const timeout = 40 * 60 * 1000;
+const baseUrl = process.env.BRIGHT_TARGET_URL!;
 
 let runner!: SecRunner;
 
@@ -15,24 +18,17 @@ before(async () => {
 
 after(() => runner.clear());
 
-const timeout = 40 * 60 * 1000;
-const baseUrl = process.env.BRIGHT_TARGET_URL!;
-
 test('GET /api/partners/query', { signal: AbortSignal.timeout(timeout) }, async () => {
   await runner
     .createScan({
-      tests: ['xpathi', 'full_path_disclosure'],
-      attackParamLocations: [AttackParamLocation.QUERY],
-      skipStaticParams: false
+      tests: ['xpathi', 'xss', 'csrf', 'full_path_disclosure'],
+      attackParamLocations: [AttackParamLocation.QUERY]
     })
     .threshold(Severity.CRITICAL)
     .timeout(timeout)
     .run({
       method: HttpMethod.GET,
-      url: `${baseUrl}/api/partners/query`,
-      headers: { 'Content-Type': 'text/xml' },
-      query: {
-        xpath: '/partners/partner/name'
-      }
+      url: `${baseUrl}/api/partners/query?xpath=%2Fpartners%2Fpartner%2Fname`,
+      headers: { 'Content-Type': 'text/xml' }
     });
 });

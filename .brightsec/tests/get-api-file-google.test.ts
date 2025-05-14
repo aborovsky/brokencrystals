@@ -1,6 +1,9 @@
 import { test, before, after } from 'node:test';
-import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
 import { SecRunner } from '@sectester/runner';
+import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
+
+const timeout = 40 * 60 * 1000;
+const baseUrl = process.env.BRIGHT_TARGET_URL!;
 
 let runner!: SecRunner;
 
@@ -15,24 +18,17 @@ before(async () => {
 
 after(() => runner.clear());
 
-const timeout = 40 * 60 * 1000;
-const baseUrl = process.env.BRIGHT_TARGET_URL!;
-
 test('GET /api/file/google', { signal: AbortSignal.timeout(timeout) }, async () => {
   await runner
     .createScan({
-      tests: ['lfi', 'ssrf', 'open_cloud_storage', 'unvalidated_redirect'],
+      tests: ['lfi', 'ssrf', 'unvalidated_redirect', 'open_cloud_storage'],
       attackParamLocations: [AttackParamLocation.QUERY]
     })
     .threshold(Severity.CRITICAL)
     .timeout(timeout)
     .run({
       method: HttpMethod.GET,
-      url: `${baseUrl}/api/file/google`,
-      headers: { 'accept': 'image/jpg' },
-      query: {
-        path: 'config/products/crystals/amethyst.jpg',
-        type: 'image/jpg'
-      }
+      url: `${baseUrl}/api/file/google?path=config/products/crystals/amethyst.jpg&type=image/jpg`,
+      headers: { accept: 'image/jpg' }
     });
 });

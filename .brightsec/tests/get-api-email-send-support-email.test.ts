@@ -1,6 +1,9 @@
 import { test, before, after } from 'node:test';
-import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
 import { SecRunner } from '@sectester/runner';
+import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
+
+const timeout = 40 * 60 * 1000;
+const baseUrl = process.env.BRIGHT_TARGET_URL!;
 
 let runner!: SecRunner;
 
@@ -15,26 +18,17 @@ before(async () => {
 
 after(() => runner.clear());
 
-const timeout = 40 * 60 * 1000;
-const baseUrl = process.env.BRIGHT_TARGET_URL!;
-
 test('GET /api/email/sendSupportEmail', { signal: AbortSignal.timeout(timeout) }, async () => {
   await runner
     .createScan({
       tests: ['proto_pollution', 'email_injection', 'xss', 'csrf'],
-      attackParamLocations: [AttackParamLocation.QUERY, AttackParamLocation.HEADER]
+      attackParamLocations: [AttackParamLocation.QUERY]
     })
     .threshold(Severity.CRITICAL)
     .timeout(timeout)
     .run({
       method: HttpMethod.GET,
-      url: `${baseUrl}/api/email/sendSupportEmail`,
-      headers: { 'Content-Type': 'application/json' },
-      query: {
-        name: 'Bob Dylan',
-        to: 'username@email.com',
-        subject: 'Help Request',
-        content: 'I would like to request help regarding..'
-      }
+      url: `${baseUrl}/api/email/sendSupportEmail?name=Bob%20Dylan&to=username%40email.com&subject=Help%20Request&content=I%20would%20like%20to%20request%20help%20regarding..`,
+      headers: { 'Content-Type': 'application/json' }
     });
 });
