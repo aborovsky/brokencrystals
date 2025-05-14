@@ -50,7 +50,7 @@ export class FileController {
 
   private async loadCPFile(cpBaseUrl: string, path: string) {
     if (!path.startsWith(cpBaseUrl)) {
-      throw new BadRequestException(`Invalid paramater 'path' ${path}`);
+      throw new BadRequestException(`Invalid parameter 'path' ${path}`);
     }
 
     const file: Stream = await this.fileService.getFile(path);
@@ -86,11 +86,21 @@ export class FileController {
     @Query('type') contentType: string,
     @Res({ passthrough: true }) res: FastifyReply
   ) {
-    const file: Stream = await this.fileService.getFile(path);
-    const type = this.getContentType(contentType);
-    res.type(type);
+    try {
+      if (!this.isValidPath(path)) {
+        throw new BadRequestException('Invalid file path');
+      }
 
-    return file;
+      const sanitizedPath = path.replace(/\.+/g, ''); // Remove any parent directory references
+      const file: Stream = await this.fileService.getFile(sanitizedPath);
+      const type = this.getContentType(contentType);
+      res.type(type);
+
+      return file;
+    } catch (err) {
+      this.logger.error('Error loading file', err);
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: 'Internal Server Error' });
+    }
   }
 
   @Get('/google')
@@ -197,6 +207,10 @@ export class FileController {
     @Query('type') contentType: string,
     @Res({ passthrough: true }) res: FastifyReply
   ) {
+    if (!this.isValidPath(path)) {
+      throw new BadRequestException('Invalid file path');
+    }
+
     const file: Stream = await this.loadCPFile(
       CloudProvidersMetaData.AZURE,
       path
@@ -235,6 +249,10 @@ export class FileController {
     @Query('type') contentType: string,
     @Res({ passthrough: true }) res: FastifyReply
   ) {
+    if (!this.isValidPath(path)) {
+      throw new BadRequestException('Invalid file path');
+    }
+
     const file: Stream = await this.loadCPFile(
       CloudProvidersMetaData.DIGITAL_OCEAN,
       path
@@ -286,13 +304,14 @@ export class FileController {
   ): Promise<string> {
     try {
       if (typeof raw === 'string' || Buffer.isBuffer(raw)) {
-        await fs.promises.access(path.dirname(file), W_OK);
-        await fs.promises.writeFile(file, raw);
-        return `File uploaded successfully at ${file}`;
+        const sanitizedPath = file.replace(/\.+/g, ''); // Remove any parent directory references
+        await fs.promises.access(path.dirname(sanitizedPath), W_OK);
+        await fs.promises.writeFile(sanitizedPath, raw);
+        return 'File uploaded successfully';
       }
     } catch (err) {
-      this.logger.error(err.message);
-      throw err.message;
+      this.logger.error('Error uploading file', err);
+      throw new BadRequestException('Failed to upload file');
     }
   }
 
@@ -324,5 +343,11 @@ export class FileController {
       this.logger.error(err.message);
       res.status(HttpStatus.NOT_FOUND);
     }
+  }
+
+  private isValidPath(filePath: string): boolean {
+    // Implement a whitelist of allowed paths or patterns
+    const allowedPaths = ['config/products/crystals/'];
+    return allowedPaths.some(allowedPath => filePath.startsWith(allowedPath));
   }
 }
