@@ -91,7 +91,7 @@ export class FileController {
         throw new BadRequestException('Invalid file path');
       }
 
-      const sanitizedPath = path.replace(/\.+/g, ''); // Remove any parent directory references
+      const sanitizedPath = path.replace(/[^a-zA-Z0-9-_./]/g, ''); // Remove any invalid characters
       const file: Stream = await this.fileService.getFile(sanitizedPath);
       const type = this.getContentType(contentType);
       res.type(type);
@@ -304,7 +304,7 @@ export class FileController {
   ): Promise<string> {
     try {
       if (typeof raw === 'string' || Buffer.isBuffer(raw)) {
-        const sanitizedPath = file.replace(/\.+/g, ''); // Remove any parent directory references
+        const sanitizedPath = file.replace(/[^a-zA-Z0-9-_./]/g, ''); // Remove any invalid characters
         await fs.promises.access(path.dirname(sanitizedPath), W_OK);
         await fs.promises.writeFile(sanitizedPath, raw);
         return 'File uploaded successfully';
