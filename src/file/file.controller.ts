@@ -251,7 +251,13 @@ export class FileController {
       throw new BadRequestException('Remote URLs are not allowed');
     }
 
-    const file: Stream = await this.fileService.getFile(filePath);
+    // Resolve the file path to prevent directory traversal
+    const resolvedPath = path.resolve('config/products/crystals', filePath);
+    if (!resolvedPath.startsWith(path.resolve('config/products/crystals'))) {
+      throw new BadRequestException('Invalid file path');
+    }
+
+    const file: Stream = await this.fileService.getFile(resolvedPath);
     const type = this.getContentType(contentType);
     res.type(type);
 
