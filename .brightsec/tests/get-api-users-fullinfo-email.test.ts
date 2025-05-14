@@ -18,16 +18,16 @@ before(async () => {
 
 after(() => runner.clear());
 
-test('GET /api/testimonials', { signal: AbortSignal.timeout(timeout) }, async () => {
+test('GET /api/users/fullinfo/:email', { signal: AbortSignal.timeout(timeout) }, async () => {
   await runner
     .createScan({
-      tests: ['sqli', 'csrf', 'xss', 'business_constraint_bypass'],
-      attackParamLocations: [AttackParamLocation.QUERY]
+      tests: ['id_enumeration', 'xss', 'csrf', 'ldap_injection', 'full_path_disclosure', 'xxe'],
+      attackParamLocations: [AttackParamLocation.PATH, AttackParamLocation.QUERY]
     })
     .threshold(Severity.CRITICAL)
     .timeout(timeout)
     .run({
       method: HttpMethod.GET,
-      url: `${baseUrl}/api/testimonials`
+      url: `${baseUrl}/api/users/fullinfo/john.doe@example.com`
     });
 });
