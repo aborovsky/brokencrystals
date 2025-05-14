@@ -156,7 +156,7 @@ export class FileController {
     @Res({ passthrough: true }) res: FastifyReply
   ) {
     // Validate the path to prevent RFI
-    if (!this.isValidPath(path) || path.includes('http://') || path.includes('https://')) {
+    if (!this.isValidPath(path) || path.includes('http://') || path.includes('https://') || path.includes('..')) {
       throw new BadRequestException(`Invalid path: ${path}`);
     }
 
