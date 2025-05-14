@@ -50,10 +50,79 @@ export class FileController {
 
   private async loadCPFile(cpBaseUrl: string, path: string) {
     if (!path.startsWith(cpBaseUrl)) {
-      throw new BadRequestException(`Invalid paramater 'path' ${path}`);
+      throw new BadRequestException(`Invalid parameter 'path' ${path}`);
     }
 
     const file: Stream = await this.fileService.getFile(path);
+
+    return file;
+  }
+
+  private isValidAzurePath(path: string): boolean {
+    // Implement a simple whitelist check for Azure paths
+    const validPaths = [
+      '/metadata/instance',
+      // Add more valid paths as needed
+    ];
+    return validPaths.some(validPath => path.startsWith(validPath));
+  }
+
+  private isValidAwsPath(path: string): boolean {
+    // Implement a simple whitelist check for AWS paths
+    const validPaths = [
+      '/config/products/crystals',
+      // Add more valid paths as needed
+    ];
+    return validPaths.some(validPath => path.startsWith(validPath));
+  }
+
+  private isValidPath(path: string): boolean {
+    // Implement a simple whitelist check for general paths
+    const validPaths = [
+      'config/products/crystals',
+      // Add more valid paths as needed
+    ];
+    return validPaths.some(validPath => path.startsWith(validPath));
+  }
+
+  @Get('/azure')
+  @ApiQuery({
+    name: 'path',
+    example: 'config/products/crystals/amethyst.jpg',
+    required: true
+  })
+  @ApiQuery({ name: 'type', example: 'image/jpg', required: true })
+  @ApiHeader({ name: 'accept', example: 'image/jpg', required: true })
+  @ApiOkResponse({
+    description: 'File read successfully'
+  })
+  @ApiInternalServerErrorResponse({
+    schema: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' },
+        location: { type: 'string' }
+      }
+    }
+  })
+  @ApiOperation({
+    description: SWAGGER_DESC_READ_FILE
+  })
+  async loadAzureFile(
+    @Query('path') path: string,
+    @Query('type') contentType: string,
+    @Res({ passthrough: true }) res: FastifyReply
+  ) {
+    if (!this.isValidAzurePath(path)) {
+      throw new BadRequestException(`Invalid path: ${path}`);
+    }
+
+    const file: Stream = await this.loadCPFile(
+      CloudProvidersMetaData.AZURE,
+      path
+    );
+    const type = this.getContentType(contentType);
+    res.type(type);
 
     return file;
   }
@@ -86,6 +155,11 @@ export class FileController {
     @Query('type') contentType: string,
     @Res({ passthrough: true }) res: FastifyReply
   ) {
+    // Validate the path to prevent RFI
+    if (!this.isValidPath(path) || path.includes('http://') || path.includes('https://')) {
+      throw new BadRequestException(`Invalid path: ${path}`);
+    }
+
     const file: Stream = await this.fileService.getFile(path);
     const type = this.getContentType(contentType);
     res.type(type);
@@ -159,46 +233,12 @@ export class FileController {
     @Query('type') contentType: string,
     @Res({ passthrough: true }) res: FastifyReply
   ) {
+    if (!this.isValidAwsPath(path)) {
+      throw new BadRequestException(`Invalid path: ${path}`);
+    }
+
     const file: Stream = await this.loadCPFile(
       CloudProvidersMetaData.AWS,
-      path
-    );
-    const type = this.getContentType(contentType);
-    res.type(type);
-
-    return file;
-  }
-
-  @Get('/azure')
-  @ApiQuery({
-    name: 'path',
-    example: 'config/products/crystals/amethyst.jpg',
-    required: true
-  })
-  @ApiQuery({ name: 'type', example: 'image/jpg', required: true })
-  @ApiHeader({ name: 'accept', example: 'image/jpg', required: true })
-  @ApiOkResponse({
-    description: 'File read successfully'
-  })
-  @ApiInternalServerErrorResponse({
-    schema: {
-      type: 'object',
-      properties: {
-        error: { type: 'string' },
-        location: { type: 'string' }
-      }
-    }
-  })
-  @ApiOperation({
-    description: SWAGGER_DESC_READ_FILE
-  })
-  async loadAzureFile(
-    @Query('path') path: string,
-    @Query('type') contentType: string,
-    @Res({ passthrough: true }) res: FastifyReply
-  ) {
-    const file: Stream = await this.loadCPFile(
-      CloudProvidersMetaData.AZURE,
       path
     );
     const type = this.getContentType(contentType);
@@ -235,6 +275,11 @@ export class FileController {
     @Query('type') contentType: string,
     @Res({ passthrough: true }) res: FastifyReply
   ) {
+    // Validate the path to prevent SSRF
+    if (path.includes('169.254.169.254') || path.includes('http://') || path.includes('https://')) {
+      throw new BadRequestException(`Invalid path: ${path}`);
+    }
+
     const file: Stream = await this.loadCPFile(
       CloudProvidersMetaData.DIGITAL_OCEAN,
       path
@@ -288,11 +333,11 @@ export class FileController {
       if (typeof raw === 'string' || Buffer.isBuffer(raw)) {
         await fs.promises.access(path.dirname(file), W_OK);
         await fs.promises.writeFile(file, raw);
-        return `File uploaded successfully at ${file}`;
+        return `File uploaded successfully.`;
       }
     } catch (err) {
-      this.logger.error(err.message);
-      throw err.message;
+      this.logger.error('An error occurred while uploading the file.');
+      throw new BadRequestException('Failed to upload file.');
     }
   }
 
@@ -321,7 +366,7 @@ export class FileController {
 
       return stream;
     } catch (err) {
-      this.logger.error(err.message);
+      this.logger.error('File not found.');
       res.status(HttpStatus.NOT_FOUND);
     }
   }
