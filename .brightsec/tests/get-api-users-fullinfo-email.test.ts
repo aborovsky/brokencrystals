@@ -18,16 +18,16 @@ before(async () => {
 
 after(() => runner.clear());
 
-test('GET /api/auth/oidc-client', { signal: AbortSignal.timeout(timeout) }, async () => {
+test('GET /api/users/fullinfo/:email', { signal: AbortSignal.timeout(timeout) }, async () => {
   await runner
     .createScan({
-      tests: ['csrf', 'secret_tokens', 'jwt'],
-      attackParamLocations: [AttackParamLocation.HEADER]
+      tests: ['id_enumeration', 'xss', 'ldapi', 'sqli', 'full_path_disclosure', 'csrf', 'xxe'],
+      attackParamLocations: [AttackParamLocation.PATH, AttackParamLocation.QUERY]
     })
     .threshold(Severity.CRITICAL)
     .timeout(timeout)
     .run({
       method: HttpMethod.GET,
-      url: `${baseUrl}/api/auth/oidc-client`
+      url: `${baseUrl}/api/users/fullinfo/john.doe@example.com`
     });
 });

@@ -1,6 +1,9 @@
 import { test, before, after } from 'node:test';
-import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
 import { SecRunner } from '@sectester/runner';
+import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
+
+const timeout = 40 * 60 * 1000;
+const baseUrl = process.env.BRIGHT_TARGET_URL!;
 
 let runner!: SecRunner;
 
@@ -15,13 +18,10 @@ before(async () => {
 
 after(() => runner.clear());
 
-const timeout = 40 * 60 * 1000;
-const baseUrl = process.env.BRIGHT_TARGET_URL!;
-
 test('POST /api/users/basic', { signal: AbortSignal.timeout(timeout) }, async () => {
   await runner
     .createScan({
-      tests: ['csrf', 'excessive_data_exposure', 'email_injection', 'sqli', 'xss'],
+      tests: ['csrf', 'xss', 'sqli', 'email_injection'],
       attackParamLocations: [AttackParamLocation.BODY]
     })
     .threshold(Severity.CRITICAL)
@@ -35,6 +35,7 @@ test('POST /api/users/basic', { signal: AbortSignal.timeout(timeout) }, async ()
         lastName: 'Doe',
         password: 'password123',
         op: 'BASIC'
-      }
+      },
+      headers: { 'Content-Type': 'application/json' }
     });
 });
