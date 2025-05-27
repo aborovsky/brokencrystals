@@ -18,22 +18,16 @@ before(async () => {
 
 after(() => runner.clear());
 
-test('POST /api/auth/jwt/jwk/login', { signal: AbortSignal.timeout(timeout) }, async () => {
+test('GET /api/users/search/john', { signal: AbortSignal.timeout(timeout) }, async () => {
   await runner
     .createScan({
-      tests: ['csrf', 'jwt', 'sqli', 'osi', 'secret_tokens'],
-      attackParamLocations: [AttackParamLocation.BODY]
+      tests: ['sqli', 'xss', 'bopla', 'business_constraint_bypass', 'ldapi'],
+      attackParamLocations: [AttackParamLocation.QUERY]
     })
     .threshold(Severity.CRITICAL)
     .timeout(timeout)
     .run({
-      method: HttpMethod.POST,
-      url: `${baseUrl}/api/auth/jwt/jwk/login`,
-      body: {
-        user: 'john',
-        password: 'Pa55w0rd',
-        op: 'basic'
-      },
-      headers: { 'Content-Type': 'application/json' }
+      method: HttpMethod.GET,
+      url: `${baseUrl}/api/users/search/john`
     });
 });

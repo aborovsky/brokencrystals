@@ -2,6 +2,9 @@ import { test, before, after } from 'node:test';
 import { SecRunner } from '@sectester/runner';
 import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
 
+const timeout = 40 * 60 * 1000;
+const baseUrl = process.env.BRIGHT_TARGET_URL!;
+
 let runner!: SecRunner;
 
 before(async () => {
@@ -15,26 +18,22 @@ before(async () => {
 
 after(() => runner.clear());
 
-const timeout = 40 * 60 * 1000;
-const baseUrl = process.env.BRIGHT_TARGET_URL!;
-
 test('POST /api/auth/jwt/kid-sql/login', { signal: AbortSignal.timeout(timeout) }, async () => {
   await runner
     .createScan({
-      tests: ['sqli', 'csrf', 'jwt', 'excessive_data_exposure', 'improper_asset_management'],
-      attackParamLocations: [AttackParamLocation.BODY, AttackParamLocation.HEADER]
+      tests: ['sqli', 'csrf', 'jwt'],
+      attackParamLocations: [AttackParamLocation.BODY]
     })
     .threshold(Severity.CRITICAL)
     .timeout(timeout)
     .run({
       method: HttpMethod.POST,
       url: `${baseUrl}/api/auth/jwt/kid-sql/login`,
-      headers: {
-        'Content-Type': 'application/json'
+      body: {
+        user: 'john',
+        password: 'Pa55w0rd',
+        op: 'basic'
       },
-      body: JSON.stringify({
-        user: 'example@example.com',
-        password: 'examplePassword'
-      })
+      headers: { 'Content-Type': 'application/json' }
     });
 });

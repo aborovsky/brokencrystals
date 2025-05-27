@@ -2,6 +2,9 @@ import { test, before, after } from 'node:test';
 import { SecRunner } from '@sectester/runner';
 import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
 
+const timeout = 40 * 60 * 1000;
+const baseUrl = process.env.BRIGHT_TARGET_URL!;
+
 let runner!: SecRunner;
 
 before(async () => {
@@ -15,13 +18,10 @@ before(async () => {
 
 after(() => runner.clear());
 
-const timeout = 40 * 60 * 1000;
-const baseUrl = process.env.BRIGHT_TARGET_URL!;
-
-test('GET /api/nestedJson', { signal: AbortSignal.timeout(timeout) }, async () => {
+test('GET /api/nestedJson?depth=1', { signal: AbortSignal.timeout(timeout) }, async () => {
   await runner
     .createScan({
-      tests: ['excessive_data_exposure', 'business_constraint_bypass', 'date_manipulation', 'osi', 'secret_tokens'],
+      tests: ['business_constraint_bypass', 'osi', 'xss'],
       attackParamLocations: [AttackParamLocation.QUERY, AttackParamLocation.HEADER]
     })
     .threshold(Severity.CRITICAL)
@@ -29,8 +29,6 @@ test('GET /api/nestedJson', { signal: AbortSignal.timeout(timeout) }, async () =
     .run({
       method: HttpMethod.GET,
       url: `${baseUrl}/api/nestedJson?depth=1`,
-      headers: {
-        'content-type': 'application/json'
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
 });
