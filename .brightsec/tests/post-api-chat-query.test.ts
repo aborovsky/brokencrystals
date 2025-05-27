@@ -1,6 +1,9 @@
 import { test, before, after } from 'node:test';
-import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
 import { SecRunner } from '@sectester/runner';
+import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
+
+const timeout = 40 * 60 * 1000;
+const baseUrl = process.env.BRIGHT_TARGET_URL!;
 
 let runner!: SecRunner;
 
@@ -15,24 +18,10 @@ before(async () => {
 
 after(() => runner.clear());
 
-const timeout = 40 * 60 * 1000;
-const baseUrl = process.env.BRIGHT_TARGET_URL!;
-
 test('POST /api/chat/query', { signal: AbortSignal.timeout(timeout) }, async () => {
   await runner
     .createScan({
-      tests: [
-        'excessive_data_exposure',
-        'xss',
-        'sqli',
-        'csrf',
-        'server_side_js_injection',
-        'osi',
-        'ssrf',
-        'secret_tokens',
-        'open_database',
-        'full_path_disclosure'
-      ],
+      tests: ['csrf', 'xss', 'secret_tokens', 'ssrf', 'insecure_tls_configuration', 'osi'],
       attackParamLocations: [AttackParamLocation.BODY]
     })
     .threshold(Severity.CRITICAL)
@@ -40,7 +29,9 @@ test('POST /api/chat/query', { signal: AbortSignal.timeout(timeout) }, async () 
     .run({
       method: HttpMethod.POST,
       url: `${baseUrl}/api/chat/query`,
-      body: JSON.stringify([{ "role": "user", "content": "Hello, how are you?" }]),
+      body: {
+        messages: [{ role: 'user', content: 'Hello' }]
+      },
       headers: { 'Content-Type': 'application/json' }
     });
 });

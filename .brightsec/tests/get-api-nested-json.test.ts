@@ -18,16 +18,17 @@ before(async () => {
 
 after(() => runner.clear());
 
-test('GET /api/auth/simple-csrf-flow', { signal: AbortSignal.timeout(timeout) }, async () => {
+test('GET /api/nestedJson', { signal: AbortSignal.timeout(timeout) }, async () => {
   await runner
     .createScan({
-      tests: ['csrf', 'http_method_fuzzing', 'full_path_disclosure'],
-      attackParamLocations: [AttackParamLocation.PATH]
+      tests: ['business_constraint_bypass', 'osi', 'full_path_disclosure'],
+      attackParamLocations: [AttackParamLocation.QUERY]
     })
     .threshold(Severity.CRITICAL)
     .timeout(timeout)
     .run({
       method: HttpMethod.GET,
-      url: `${baseUrl}/api/auth/simple-csrf-flow`
+      url: `${baseUrl}/api/nestedJson?depth=1`,
+      headers: { 'Content-Type': 'application/json' }
     });
 });

@@ -18,16 +18,16 @@ before(async () => {
 
 after(() => runner.clear());
 
-test('GET /api/auth/simple-csrf-flow', { signal: AbortSignal.timeout(timeout) }, async () => {
+test('GET /api/v1/userinfo/:email', { signal: AbortSignal.timeout(timeout) }, async () => {
   await runner
     .createScan({
-      tests: ['csrf', 'http_method_fuzzing', 'full_path_disclosure'],
+      tests: ['id_enumeration', 'bopla', 'sqli', 'xss', 'csrf'],
       attackParamLocations: [AttackParamLocation.PATH]
     })
     .threshold(Severity.CRITICAL)
     .timeout(timeout)
     .run({
       method: HttpMethod.GET,
-      url: `${baseUrl}/api/auth/simple-csrf-flow`
+      url: `${baseUrl}/api/v1/userinfo/john.doe@example.com`
     });
 });

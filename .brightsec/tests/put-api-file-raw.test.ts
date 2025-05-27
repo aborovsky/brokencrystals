@@ -1,6 +1,9 @@
 import { test, before, after } from 'node:test';
-import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
 import { SecRunner } from '@sectester/runner';
+import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
+
+const timeout = 40 * 60 * 1000;
+const baseUrl = process.env.BRIGHT_TARGET_URL!;
 
 let runner!: SecRunner;
 
@@ -15,20 +18,18 @@ before(async () => {
 
 after(() => runner.clear());
 
-const timeout = 40 * 60 * 1000;
-const baseUrl = process.env.BRIGHT_TARGET_URL!;
-
-test('PUT /api/file/raw', { signal: AbortSignal.timeout(timeout) }, async () => {
+test('PUT /api/file/raw?path=some/path/to/file.png', { signal: AbortSignal.timeout(timeout) }, async () => {
   await runner
     .createScan({
-      tests: ['file_upload', 'lfi', 'osi', 'excessive_data_exposure', 'csrf'],
-      attackParamLocations: [AttackParamLocation.PATH, AttackParamLocation.BODY, AttackParamLocation.QUERY]
+      tests: ['file_upload', 'lfi', 'ssrf', 'osi', 'xss'],
+      attackParamLocations: [AttackParamLocation.QUERY, AttackParamLocation.BODY]
     })
     .threshold(Severity.CRITICAL)
     .timeout(timeout)
     .run({
       method: HttpMethod.PUT,
       url: `${baseUrl}/api/file/raw?path=some/path/to/file.png`,
-      body: '<file content>'
+      body: '<raw_file_content>',
+      headers: { 'Content-Type': 'text/plain' }
     });
 });
