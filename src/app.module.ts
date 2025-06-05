@@ -2,9 +2,6 @@ import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-import { FileModule } from './file/file.module';
-import { SubscriptionsModule } from './subscriptions/subscriptions.module';
-import { TestimonialsModule } from './testimonials/testimonials.module';
 import { ProductsModule } from './products/products.module';
 import { OrmModule } from './orm/orm.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -17,17 +14,12 @@ import { AppService } from './app.service';
 import { UsersService } from './users/users.service';
 import { AppResolver } from './app.resolver';
 import { PartnersModule } from './partners/partners.module';
-import { EmailModule } from './email/email.module';
-import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
     OrmModule,
     AuthModule,
     UsersModule,
-    FileModule,
-    SubscriptionsModule,
-    TestimonialsModule,
     ProductsModule,
     ConfigModule.forRoot({
       isGlobal: true
@@ -38,9 +30,7 @@ import { ChatModule } from './chat/chat.module';
       graphiql: true,
       autoSchemaFile: true
     }),
-    PartnersModule,
-    EmailModule,
-    ChatModule
+    PartnersModule
   ],
   controllers: [AppController],
   providers: [
