@@ -135,10 +135,18 @@ export class UsersController {
       }
     }
   })
-  async getById(@Param('id') id: number): Promise<UserDto> {
+  @UseGuards(AuthGuard)
+  async getById(@Param('id') id: number, @Req() req: FastifyRequest): Promise<UserDto> {
     try {
       this.logger.debug(`Find a user by id: ${id}`);
-      return new UserDto(await this.usersService.findById(id));
+      const user = await this.usersService.findById(id);
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      if (this.originEmail(req) !== user.email) {
+        throw new ForbiddenException('Access denied');
+      }
+      return new UserDto(user);
     } catch (err) {
       throw new HttpException(err.message, err.status);
     }
@@ -217,8 +225,7 @@ export class UsersController {
     const user = await this.usersService.findByEmail(email);
     if (!user) {
       throw new NotFoundException({
-        error: 'Could not file user',
-        location: __filename
+        error: 'Could not file user'
       });
     }
 
@@ -231,8 +238,7 @@ export class UsersController {
       return user.photo;
     } catch (err) {
       throw new InternalServerErrorException({
-        error: err.message,
-        location: __filename
+        error: err.message
       });
     }
   }
@@ -270,8 +276,7 @@ export class UsersController {
     const user = await this.usersService.findById(id);
     if (!user) {
       throw new NotFoundException({
-        error: 'Could not file user',
-        location: __filename
+        error: 'Could not file user'
       });
     }
 
@@ -310,8 +315,7 @@ export class UsersController {
       }
     } catch (err) {
       throw new InternalServerErrorException({
-        error: err.message,
-        location: __filename
+        error: err.message
       });
     }
 
@@ -463,8 +467,7 @@ export class UsersController {
       type: 'object',
       properties: {
         statusCode: { type: 'number' },
-        message: { type: 'string' },
-        error: { type: 'string' }
+        message: { type: 'string' }
       }
     }
   })
@@ -552,8 +555,7 @@ export class UsersController {
       }
     } catch (err) {
       throw new InternalServerErrorException({
-        error: err.message,
-        location: __filename
+        error: err.message
       });
     }
   }
