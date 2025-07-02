@@ -91,7 +91,8 @@ export class AppController {
         }
       });
       // Use a safe template rendering method
-      const templateFunction = dotT.template(sanitizedText);
+      const templateFunction = dotT.template(sanitizedText, {interpolate: /
+    /});
       const res = templateFunction({});
       this.logger.debug(`Rendered template: ${res}`);
       return res;
