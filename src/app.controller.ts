@@ -90,7 +90,9 @@ export class AppController {
             return char;
         }
       });
-      const res = dotT.compile(sanitizedText)();
+      // Use a safe template rendering method
+      const templateFunction = dotT.template(sanitizedText);
+      const res = templateFunction({});
       this.logger.debug(`Rendered template: ${res}`);
       return res;
     }
@@ -201,6 +203,8 @@ export class AppController {
   getConfig(): AppConfig {
     this.logger.debug('Called getConfig');
     const config = this.appService.getConfig();
+    // Remove sensitive information from the config before returning
+    delete config.secretToken;
     return config;
   }
 
