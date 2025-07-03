@@ -13,7 +13,6 @@ import { MercuriusDriver, MercuriusDriverConfig } from '@nestjs/mercurius';
 import { AppService } from './app.service';
 import { UsersService } from './users/users.service';
 import { AppResolver } from './app.resolver';
-import { PartnersModule } from './partners/partners.module';
 
 @Module({
   imports: [
@@ -29,8 +28,7 @@ import { PartnersModule } from './partners/partners.module';
       driver: MercuriusDriver,
       graphiql: true,
       autoSchemaFile: true
-    }),
-    PartnersModule
+    })
   ],
   controllers: [AppController],
   providers: [
