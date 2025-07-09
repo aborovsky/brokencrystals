@@ -46,6 +46,10 @@ export class PartnersController {
     this.logger.debug(`Getting partners with xpath expression "${xpath}"`);
 
     try {
+      // Sanitize the input to prevent XPath Injection
+      if (!this.isValidXPath(xpath)) {
+        throw new Error('Invalid XPath expression');
+      }
       return this.partnersService.getPartnersProperties(xpath);
     } catch (err) {
       throw new HttpException(
@@ -85,8 +89,9 @@ export class PartnersController {
     );
 
     try {
-      const xpath = `//partners/partner[username/text()='${username}' and password/text()='${password}']/*`;
-      const xmlStr = this.partnersService.getPartnersProperties(xpath);
+      // Use parameterized XPath to prevent injection
+      const xpath = `//partners/partner[username/text()=$username and password/text()=$password]/*`;
+      const xmlStr = this.partnersService.getPartnersPropertiesWithParams(xpath, { username, password });
 
       // Check if account's data contains any information - If not, the login failed!
       if (
@@ -128,6 +133,10 @@ export class PartnersController {
     this.logger.debug(`Searching partner names by the keyword "${keyword}"`);
 
     try {
+      // Sanitize the input to prevent XPath Injection
+      if (!this.isValidKeyword(keyword)) {
+        throw new Error('Invalid search keyword');
+      }
       const xpath = `//partners/partner/name[contains(., '${keyword}')]`;
       return this.partnersService.getPartnersProperties(xpath);
     } catch (err) {
@@ -143,5 +152,19 @@ export class PartnersController {
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
+  }
+
+  private isValidXPath(xpath: string): boolean {
+    // Implement a basic validation for XPath expressions
+    // This is a placeholder for a more robust validation logic
+    const xpathPattern = /^\/\w+(\/\w+)*$/;
+    return xpathPattern.test(xpath);
+  }
+
+  private isValidKeyword(keyword: string): boolean {
+    // Implement a basic validation for search keywords
+    // This is a placeholder for a more robust validation logic
+    const keywordPattern = /^[a-zA-Z0-9 ]+$/;
+    return keywordPattern.test(keyword);
   }
 }
