@@ -70,8 +70,16 @@ export class PartnersService {
     return `${this.XML_HEADER}\n<root>\n${xmlNodes.join('\n')}\n</root>`;
   }
 
-  getPartnersProperties(xpathExpression: string): string {
-    let xmlNodes = this.selectPartnerPropertiesByXPATH(xpathExpression);
+  private sanitizeInput(input: string): string {
+    // Basic sanitization to escape single quotes
+    return input.replace(/'/g, "&apos;");
+  }
+
+  getPartnersProperties(xpath: string): string {
+    // Sanitize the entire XPath expression
+    const sanitizedXpath = this.sanitizeInput(xpath);
+
+    let xmlNodes = this.selectPartnerPropertiesByXPATH(sanitizedXpath);
 
     if (!Array.isArray(xmlNodes)) {
       this.logger.debug(

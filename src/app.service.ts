@@ -63,11 +63,12 @@ export class AppService {
         OrmModuleConfigProperties.ENV_DATABASE_PASSWORD
       );
 
+    // Remove sensitive information from the response
     return {
       awsBucket: this.configService.get<string>(
         AppModuleConfigProperties.ENV_AWS_BUCKET
       ),
-      sql: `postgres://${dbUser}:${dbPwd}@${dbHost}:${dbPort}/${dbSchema} `,
+      sql: 'Sensitive information hidden',
       googlemaps: this.configService.get<string>(
         AppModuleConfigProperties.ENV_GOOGLE_MAPS
       )
