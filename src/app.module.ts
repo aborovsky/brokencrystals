@@ -13,6 +13,7 @@ import { MercuriusDriver, MercuriusDriverConfig } from '@nestjs/mercurius';
 import { AppService } from './app.service';
 import { UsersService } from './users/users.service';
 import { AppResolver } from './app.resolver';
+import { HealthController } from './health.controller';
 
 @Module({
   imports: [
@@ -30,7 +31,7 @@ import { AppResolver } from './app.resolver';
       autoSchemaFile: true
     })
   ],
-  controllers: [AppController],
+  controllers: [AppController, HealthController],
   providers: [
     HttpClientService,
     AppService,

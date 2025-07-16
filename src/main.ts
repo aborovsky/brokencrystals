@@ -233,6 +233,10 @@ async function bootstrap() {
 
   SwaggerModule.setup('swagger', app, document);
 
+  app.get('/api/health', (req, res) => {
+    res.status(200).send({ status: 'ok' });
+  });
+
   await app.listen(1234, '0.0.0.0');
 }
 
