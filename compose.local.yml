@@ -68,7 +68,7 @@ services:
     healthcheck:
       interval: 10s
       retries: 5
-      test: ['CMD', 'curl', '-f', 'http://localhost:3000']
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
       timeout: 30s
     environment:
       URL: http://localhost:3000
