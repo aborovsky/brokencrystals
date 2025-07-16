@@ -35,6 +35,9 @@ jobs:
             sleep 5
           done
 
+      - name: Display Node.js container logs
+        run: docker logs brokencrystals-nodejs-1
+
       - name: Set up Node.js 22.x for SecTesterJS
         uses: actions/setup-node@v4
         with:
