@@ -1,3 +1,4 @@
+```
 import { test, before, after } from 'node:test';
 import { SecRunner } from '@sectester/runner';
 import { Severity, AttackParamLocation, HttpMethod } from '@sectester/scan';
@@ -31,3 +32,4 @@ test('GET /api/config', { signal: AbortSignal.timeout(timeout) }, async () => {
       url: `${baseUrl}/api/config`
     });
 });
+```
