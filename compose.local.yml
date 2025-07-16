@@ -68,12 +68,12 @@ services:
     healthcheck:
       interval: 5s
       retries: 10
-      test: ['CMD', 'wget', '--spider', '-q', 'http://nodejs:3000/swagger']
+      test: ['CMD', 'wget', '--spider', '-q', 'http://nodejs:1234/swagger']
       timeout: 30s
     environment:
-      URL: http://localhost:3000
+      URL: http://localhost:1234
     ports:
-      - '3000:3000'
+      - '1234:1234'
     logging:
       options:
         max-file: '5'
