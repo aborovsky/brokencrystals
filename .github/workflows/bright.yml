@@ -1,0 +1,7 @@
+# GitHub Actions workflow modifications
+# Add a step to display Node.js container logs upon failure
+jobs:
+  test:
+    steps:
+      - name: Display Node.js container logs
+        run: docker logs brokencrystals-nodejs-1
