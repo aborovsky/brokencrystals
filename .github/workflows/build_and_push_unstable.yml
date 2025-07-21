@@ -15,6 +15,10 @@ jobs:
         run: |
           echo "Authenticating with OIDC..."
           export DOCKER_AUTH_TOKEN=$(curl -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://auth.docker.io/token)
+          if [ -z "$DOCKER_AUTH_TOKEN" ]; then
+            echo "Error: Failed to retrieve Docker authentication token." >&2
+            exit 1
+          fi
       - name: Login to DockerHub
         run: |
           docker login --username=${{ vars.DOCKERHUB_BRIGHT_USER }} --password=${{ secrets.DOCKERHUB_BRIGHT_TOKEN }}
