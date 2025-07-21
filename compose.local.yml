@@ -68,15 +68,16 @@ services:
     healthcheck:
       interval: 5s
       retries: 10
-      test: ['CMD', 'wget', '--spider', '-q', 'http://nodejs:3000/api/config']
+      test: ['CMD', 'wget', '--spider', '-q', 'http://nodejs:3000/health']
       timeout: 30s
     environment:
       URL: http://localhost:3000
     ports:
       - '3000:3000'
     logging:
+      driver: json-file
       options:
-        max-file: '5'
+        max-file: '3'
         max-size: '10m'
     depends_on:
       db:
