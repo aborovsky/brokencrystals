@@ -1,20 +1,20 @@
 name: "Build and Push Docker Image (Manual)"
 on:
   workflow_dispatch:
-# on:
-#   workflow_dispatch:
-#     inputs:
-#       tag_prefix:
-#         description: 'Tag prefix to use (defaults to unstable)'
-#         required: false
-#         default: 'unstable'
 
 jobs:
   docker-build-push:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Authenticate with OIDC
+        run: |
+          echo "Authenticating with OIDC..."
+          export DOCKER_AUTH_TOKEN=$(curl -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://auth.docker.io/token)
       - name: Login to DockerHub
         run: |
           docker login --username=${{ vars.DOCKERHUB_BRIGHT_USER }} --password=${{ secrets.DOCKERHUB_BRIGHT_TOKEN }}
@@ -27,7 +27,6 @@ jobs:
       - name: Set tag prefix
         id: set_tag_prefix
         run: |
-          # Use user-provided tag prefix or default to 'unstable'
           if [ -z "${{ github.event.inputs.tag_prefix }}" ]; then
             TAG_PREFIX="unstable"
           else
