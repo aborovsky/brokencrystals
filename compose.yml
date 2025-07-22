@@ -24,7 +24,7 @@ services:
       interval: 5s
       retries: 10
       test:
-        ['CMD', 'wget', '--spider', '-q', 'http://127.0.0.1:3000/api/config']
+        ['CMD', 'wget', '--spider', '-q', 'http://nodejs:3000/api/config']
       timeout: 30s
     environment:
       NODE_ENV: production
@@ -42,6 +42,8 @@ services:
       - db
       - mailcatcher
       - keycloak
+    networks:
+      - app_network
 
   watchtower:
     image: 'containrrr/watchtower'
@@ -120,6 +122,10 @@ services:
       options:
         max-file: '5'
         max-size: '10m'
+
+networks:
+  app_network:
+    driver: bridge
 
 volumes:
   letsencrypt:
