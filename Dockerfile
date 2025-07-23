@@ -6,9 +6,6 @@ FROM node:18-alpine AS build
 
 WORKDIR /usr/src/app
 
-# Install wget for healthcheck
-RUN apk add --no-cache wget
-
 # Copy and build NestJS server project
 COPY --chown=node:node package*.json ./
 COPY --chown=node:node tsconfig.build.json ./
@@ -48,9 +45,6 @@ FROM node:18-alpine AS production
 
 WORKDIR /usr/src/app
 
-# Install wget for healthcheck
-RUN apk add --no-cache wget
-
 COPY --chown=node:node .env ./
 COPY --chown=node:node config ./config
 COPY --chown=node:node keycloak ./keycloak
@@ -61,5 +55,7 @@ COPY --chown=node:node --from=build /usr/src/app/dist ./dist
 
 COPY --chown=node:node --from=build /usr/src/app/client/dist ./client/dist
 COPY --chown=node:node --from=build /usr/src/app/client/vcs ./client/vcs
+
+EXPOSE 3000
 
 CMD ["npm", "run", "start:prod"]
