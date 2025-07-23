@@ -53,7 +53,7 @@ jobs:
       - name: Run security tests
         env:
           BRIGHT_HOSTNAME: development.playground.brightsec.com
-          BRIGHT_PROJECT_ID: kzDSPViNAfFv4AmWL4w3a1
+          BRIGHT_PROJECT_ID: kzDSPViNAfFv4w3a1
           BRIGHT_AUTH_ID: ${{ vars.BRIGHT_AUTH_ID }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRIGHT_TOKEN: ${{ env.BRIGHT_TOKEN }}
