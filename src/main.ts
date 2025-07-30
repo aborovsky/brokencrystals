@@ -233,7 +233,8 @@ async function bootstrap() {
 
   SwaggerModule.setup('swagger', app, document);
 
-  await app.listen(1234, '0.0.0.0');
+  console.log(`Application is starting on port 3000`);
+  await app.listen(3000, '0.0.0.0');
 }
 
 if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
