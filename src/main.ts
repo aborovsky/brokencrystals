@@ -239,7 +239,7 @@ async function bootstrap() {
 
   SwaggerModule.setup('swagger', app, document);
 
-  await app.listen(1234, '0.0.0.0');
+  await app.listen(process.env.PORT || 1234, '0.0.0.0');
 }
 
 if (cluster.isPrimary && process.env.NODE_ENV === 'production') {

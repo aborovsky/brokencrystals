@@ -30,7 +30,7 @@ jobs:
 
       - name: Verify application readiness
         run: |
-          until curl -f http://127.0.0.1:1234/api/config; do
+          until curl -f http://127.0.0.1:${{ secrets.PORT }}/api/config; do
             echo "Waiting for application to be ready..."
             sleep 5
           done
@@ -57,7 +57,7 @@ jobs:
           BRIGHT_AUTH_ID: ${{ vars.BRIGHT_AUTH_ID }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRIGHT_TOKEN: ${{ env.BRIGHT_TOKEN }}
-          BRIGHT_TARGET_URL: http://127.0.0.1:1234
+          BRIGHT_TARGET_URL: http://127.0.0.1:${{ secrets.PORT }}
         run: |
           node --experimental-transform-types --experimental-strip-types --experimental-detect-module \
           --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --disable-warning=ExperimentalWarning \
