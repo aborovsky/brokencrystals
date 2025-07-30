@@ -125,6 +125,15 @@ async function bootstrap() {
     );
   });
 
+  server.route({
+    method: 'GET',
+    url: '/api/config',
+    handler: (req, res) => {
+      res.statusCode = 200;
+      res.end(JSON.stringify({ success: true, config: { key: 'value' } }));
+    },
+  });
+
   await server.register(fastifyStatic, {
     root: join(__dirname, '..', 'client', 'dist'),
     prefix: `/`,
@@ -166,10 +175,7 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter(server),
     {
-      logger:
-        process.env.NODE_ENV === 'production'
-          ? ['error']
-          : ['debug', 'log', 'warn', 'error']
+      logger: ['debug', 'log', 'warn', 'error'],
     }
   );
 
@@ -233,7 +239,7 @@ async function bootstrap() {
 
   SwaggerModule.setup('swagger', app, document);
 
-  await app.listen(1234, '0.0.0.0');
+  await app.listen(process.env.PORT || 1234, '0.0.0.0');
 }
 
 if (cluster.isPrimary && process.env.NODE_ENV === 'production') {

@@ -56,4 +56,5 @@ COPY --chown=node:node --from=build /usr/src/app/dist ./dist
 COPY --chown=node:node --from=build /usr/src/app/client/dist ./client/dist
 COPY --chown=node:node --from=build /usr/src/app/client/vcs ./client/vcs
 
+ENV LOG_LEVEL=debug
 CMD ["npm", "run", "start:prod"]
