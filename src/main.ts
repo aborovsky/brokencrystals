@@ -76,10 +76,7 @@ async function bootstrap() {
   https.globalAgent.maxSockets = Infinity;
 
   const server = fastify({
-    logger:
-      process.env.FASTIFY_LOGGER === 'true'
-        ? { level: process.env.FASTIFY_LOG_LEVEL || 'warn' }
-        : false,
+    logger: { level: 'debug' },
     trustProxy: true,
     onProtoPoisoning: 'ignore',
     https:
@@ -93,6 +90,10 @@ async function bootstrap() {
             )
           }
         : null
+  });
+
+  server.get('/api/config', async (req, res) => {
+    res.status(200).send({ status: 'ok', message: 'Service is operational' });
   });
 
   server.setDefaultRoute((req, res) => {
